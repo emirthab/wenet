@@ -1,0 +1,12 @@
+[configuration]
+
+entry_symbol = "example_library_init"
+compatibility_minimum = "4.1"
+
+[libraries]
+
+macos.debug = "native/bin/libgdwenet.macos.template_debug.framework"
+macos.release = "native/bin/libgdwenet.macos.template_debug.framework"
+
+windows.release.x86_64 = "native/bin/libgdwenet.windows.template_debug.x86_64.dll"
+windows.debug.x86_64 = "native/bin/libgdwenet.windows.template_debug.x86_64.dll"
