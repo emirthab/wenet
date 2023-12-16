@@ -28,6 +28,7 @@ namespace godot
 		void handle_server();
 
 		void load_chunks(int chunk_size, int cell_radius);
+		
 		// Setter Getters
 		void set_port(int port) {
 			this->port = port;
@@ -43,7 +44,7 @@ namespace godot
 		TypedArray<Chunk> get_chunks() {
 			return chunks;
 		}
-
+		void test();
 		Chunk* get_chunk(int x, int y);
 		void add_chunk(Chunk *chunk);
 	};
