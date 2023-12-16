@@ -20,6 +20,7 @@ namespace godot
 		Chunk();
 		~Chunk();
 
+		bool sleeping = false;
 		int x = 0;
 		int y = 0;
 
