@@ -18,12 +18,8 @@ void WeNet::_bind_methods()
 	ClassDB::bind_method(D_METHOD("get_server"), &WeNet::get_server);
 	ClassDB::bind_method(D_METHOD("get_chunk", "x", "y"), &WeNet::get_chunk);
 	ClassDB::bind_method(D_METHOD("add_chunk", "chunk"), &WeNet::add_chunk);
-	ClassDB::bind_method(D_METHOD("load_chunks", "chunk"), &WeNet::load_chunks);
+	ClassDB::bind_method(D_METHOD("load_chunks", "chunk_size", "chunk_cell_radius"), &WeNet::load_chunks);
 	ClassDB::bind_method(D_METHOD("get_chunks"), &WeNet::get_chunks);
-
-	ClassDB::bind_method(D_METHOD("get_chunk_cell_radius"), &WeNet::get_chunk_cell_radius);
-	ClassDB::bind_method(D_METHOD("set_chunk_cell_radius", "chunk_cell_radius"), &WeNet::set_chunk_cell_radius);
-
 }
 
 
@@ -35,13 +31,13 @@ void WeNet::handle_server()
 	UtilityFunctions::print("Server started successfully!");
 }
 
-void WeNet::load_chunks(int chunk_size, int cell_radius)
+void WeNet::load_chunks(int chunk_size, int chunk_cell_radius)
 {
-	int max_distance_squared = pow(cell_radius, 2) * 2;
-	for (int x = -cell_radius; x < cell_radius + 1; x++)
+	int max_distance_squared = pow(chunk_cell_radius, 2) * 2;
+	for (int x = -chunk_cell_radius; x < chunk_cell_radius + 1; x++)
 	{
 		int x_squared = (pow(x, 2));
-		for (int y = -cell_radius; y < cell_radius + 1; y++)
+		for (int y = -chunk_cell_radius; y < chunk_cell_radius + 1; y++)
 		{
 			if (x_squared + pow(y, 2) <= max_distance_squared)
 			{

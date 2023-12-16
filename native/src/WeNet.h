@@ -14,8 +14,8 @@ namespace godot
 
 	private:
 		int port = 3636;
-		int chunk_cell_radius;
-		int chunk_size;
+		int chunk_cell_radius = 128;
+		int chunk_size = 128;
 
 		WeNetServer server;
 		std::unordered_map<int, std::unordered_map<int, Chunk *>> chunk_map;
@@ -34,13 +34,10 @@ namespace godot
 
 		void handle_server();
 
-		void load_chunks(int chunk_size, int cell_radius);
+		void load_chunks(int chunk_size, int chunk_cell_radius);
 
 		void set_port(int port) { this->port = port; }
 		int get_port() { return port; }
-
-		int get_chunk_cell_radius() { return chunk_cell_radius; }
-		void set_chunk_cell_radius(int chunk_cell_radius) { this->chunk_cell_radius = chunk_cell_radius; }
 
 		WeNetServer *get_server() { return &server; }
 		TypedArray<Chunk> get_chunks() const { return chunks; }
