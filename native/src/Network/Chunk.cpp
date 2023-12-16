@@ -17,8 +17,3 @@ void Chunk::_bind_methods()
 
 
 }
-
-
-Chunk::Chunk(){}
-
-Chunk::~Chunk(){}

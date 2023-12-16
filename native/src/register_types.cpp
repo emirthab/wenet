@@ -2,6 +2,7 @@
 #include <gdextension_interface.h>
 #include <godot_cpp/core/defs.hpp>
 #include <godot_cpp/godot.hpp>
+#include <godot_cpp/classes/engine.hpp>
 
 #include "WeNet.h"
 #include "Network/WeNetServer.h"
@@ -9,12 +10,18 @@
 
 using namespace godot;
 
+static WeNet* WeNetPtr = NULL;
+
 void initialize_example_module(ModuleInitializationLevel p_level) {
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
 		return;
 	}
 
 	ClassDB::register_class<WeNet>();
+
+	WeNetPtr = memnew(WeNet);
+	Engine::get_singleton()->register_singleton("WeNet", WeNet::get_singleton());
+
 	ClassDB::register_class<WeNetServer>();
 	ClassDB::register_class<Chunk>();
 }
