@@ -7,42 +7,69 @@ using namespace godot;
 
 void WeNet::_bind_methods()
 {
-	ClassDB::bind_method(D_METHOD("handle_server"), &WeNet::handleServer);
+	ClassDB::bind_method(D_METHOD("handle_server"), &WeNet::handle_server);
 
-	ClassDB::bind_method(D_METHOD("set_port", "p"), &WeNet::set_port);
+	ClassDB::bind_method(D_METHOD("set_port", "port"), &WeNet::set_port);
 	ClassDB::bind_method(D_METHOD("get_port"), &WeNet::get_port);
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "port"), "set_port", "get_port");
+
+	ClassDB::bind_method(D_METHOD("get_server"), &WeNet::get_server);
+	ClassDB::bind_method(D_METHOD("get_chunk", "x", "y"), &WeNet::get_chunk);
+	ClassDB::bind_method(D_METHOD("add_chunk", "chunk"), &WeNet::add_chunk);
+	ClassDB::bind_method(D_METHOD("load_chunks", "chunk"), &WeNet::load_chunks);
+	ClassDB::bind_method(D_METHOD("get_chunks"), &WeNet::get_chunks);
+
 }
 
 WeNet::WeNet() {}
 WeNet::~WeNet() {}
 
-void WeNet::handleServer()
-{
+void WeNet::handle_server() {
 	server.listen(port);
 	server.handling = true;
+
 	UtilityFunctions::print("Server started successfully!");
 }
 
-void WeNet::_init()
-{
+void WeNet::load_chunks(int chunk_size, int cell_radius) {
+	int max_distance_squared = pow(cell_radius, 2) * 2;
+	for (int x = -cell_radius; x < cell_radius + 1; x++) {
+		int x_squared = (pow(x, 2));
+		for (int y = -cell_radius; y < cell_radius + 1; y++) {
+			if (x_squared + pow(y, 2) <= max_distance_squared) {
+				Chunk* chunk = memnew(Chunk);
+				chunk->x = x;
+				chunk->y = y;
+				this->add_chunk(chunk);
+			}
+		}
+	}
+}
+
+void WeNet::_init() {
 	UtilityFunctions::print("initial");
 }
 
-void WeNet::_process(double delta)
-{
-
-
+void WeNet::_process(double delta) {
 
 }
 
-void godot::WeNet::set_port(int p)
-{
-	port = p;
+Chunk* WeNet::get_chunk(int x, int y) {
+	auto x_iter = chunk_map.find(x);
+	if (x_iter != chunk_map.end()) {
+		auto y_iter = x_iter->second.find(y);
+		if (y_iter != x_iter->second.end()) {
+			return y_iter->second;
+		}
+	}
+
+	// Return nullptr if chunk is not found
+	return nullptr;
 }
 
-int godot::WeNet::get_port()
-{
-	return port;
+void WeNet::add_chunk(Chunk* chunk) {
+	chunks.push_back(chunk);
+	int x = chunk->x;
+	int y = chunk->y;
+	chunk_map[x][y] = chunk;
 }
-

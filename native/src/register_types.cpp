@@ -5,6 +5,7 @@
 
 #include "WeNet.h"
 #include "Network/WeNetServer.h"
+#include "Network/Chunk.h"
 
 using namespace godot;
 
@@ -15,6 +16,7 @@ void initialize_example_module(ModuleInitializationLevel p_level) {
 
 	ClassDB::register_class<WeNet>();
 	ClassDB::register_class<WeNetServer>();
+	ClassDB::register_class<Chunk>();
 }
 
 void uninitialize_example_module(ModuleInitializationLevel p_level) {

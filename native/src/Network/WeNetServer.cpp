@@ -12,7 +12,7 @@ void WeNetServer::_bind_methods()
 WeNetServer::WeNetServer() {}
 WeNetServer::~WeNetServer() {}
 
-void godot::WeNetServer::_process(double delta)
+void WeNetServer::_process(double delta)
 {
 	if (!handling) {
 		return;
@@ -21,10 +21,10 @@ void godot::WeNetServer::_process(double delta)
 	this->poll();
 
 	if (this->is_connection_available()) {
-		Ref<PacketPeerUDP> peer = this->take_connection();
+		Ref<PacketPeerUDP> peer = Ref<PacketPeerUDP>(this->take_connection());
 		String ip_address = peer->get_packet_ip();
 	 	PackedByteArray packet = peer->get_packet();
-
+		 
 		UtilityFunctions::print("Accepted Peer: " + ip_address);
 		UtilityFunctions::print("Received Data: " + packet.get_string_from_utf8());
 
