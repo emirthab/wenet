@@ -6,13 +6,11 @@
 
 #include "Network/Chunk.h"
 #include "Network/Server.h"
-#include "Network/Client.h"
 #include "Utils/Common.h"
 
 using namespace godot;
 
 Server *ServerPtr = nullptr;
-Client *ClientPtr = nullptr;
 
 void initialize_example_module(ModuleInitializationLevel p_level)
 {
@@ -23,13 +21,10 @@ void initialize_example_module(ModuleInitializationLevel p_level)
 
 	ClassDB::register_class<Chunk>();
 	ClassDB::register_class<Server>();
-	ClassDB::register_class<Client>();
 
 	ServerPtr = memnew(Server);
 	ServerPtr->init();
 
-	ClientPtr = memnew(Client);
-	ClientPtr->init();
 }
 
 void uninitialize_example_module(ModuleInitializationLevel p_level)
