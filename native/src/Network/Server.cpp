@@ -12,6 +12,7 @@ void Server::_bind_methods()
 {
     ClassDB::bind_method(D_METHOD("start_server", "port"), &Server::start_server);
     ClassDB::bind_method(D_METHOD("get_chunk", "x", "y"), &Server::get_chunk);
+    ClassDB::bind_method(D_METHOD("get_packet_handler"), &Server::get_packet_handler);
     ClassDB::bind_method(D_METHOD("_add_to_tree"), &Server::_add_to_tree);
     ClassDB::bind_method(D_METHOD("load_chunks", "chunk_size", "chunk_cell_radius"), &Server::load_chunks);
 }
@@ -80,7 +81,7 @@ void Server::_process(double delta)
     {
         return;
     }
-    
+
     server->poll();
 
     if (server->is_connection_available())

@@ -8,6 +8,7 @@
 
 #include "Chunk.h"
 #include "Utils/Common.h"
+#include "GamePacketHandler.h"
 
 namespace godot
 {
@@ -17,11 +18,12 @@ namespace godot
 
     private:
         UDPServer *server;
+        GamePacketHandler *packet_handler;
 
         int chunk_cell_radius = 10;
         int chunk_size = 128;
         bool handling = false;
-        
+
         std::unordered_map<int, std::unordered_map<int, Chunk *>> chunk_map;
 
     protected:
@@ -32,7 +34,9 @@ namespace godot
         Server()
         {
             singleton = this;
+            packet_handler = memnew(GamePacketHandler);
         }
+
         void init();
         void _add_to_tree();
         virtual void _process(double delta) override;
@@ -43,6 +47,8 @@ namespace godot
         Chunk *get_chunk(int x, int y);
 
         void load_chunks(int chunk_size, int chunk_cell_radius);
+
+        GamePacketHandler *get_packet_handler() { return this->packet_handler; };
     };
 }
 

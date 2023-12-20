@@ -6,6 +6,11 @@
 
 #include "Network/Chunk.h"
 #include "Network/Server.h"
+#include "Network/GamePacketHandler.h"
+
+#include "Network/PacketBase.h"
+#include "Network/ClientPackets/PacketConnectionRequest.h"
+
 #include "Utils/Common.h"
 
 using namespace godot;
@@ -21,10 +26,13 @@ void initialize_example_module(ModuleInitializationLevel p_level)
 
 	ClassDB::register_class<Chunk>();
 	ClassDB::register_class<Server>();
+	ClassDB::register_class<GamePacketHandler>();
+
+	ClassDB::register_class<PacketBase>();
+	ClassDB::register_class<PacketConnectionRequest>();
 
 	ServerPtr = memnew(Server);
 	ServerPtr->init();
-
 }
 
 void uninitialize_example_module(ModuleInitializationLevel p_level)
