@@ -1,4 +1,4 @@
-#include "PacketConnectionRequest.h"
+#include "packet_connection_request.h"
 
 using namespace godot;
 

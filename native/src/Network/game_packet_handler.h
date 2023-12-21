@@ -2,9 +2,9 @@
 #define GAME_PACKET_HANDLER_H
 
 #include <godot_cpp/classes/object.hpp>
-#include "PacketBase.h"
+#include "packet_base.h"
 
-#include "ClientPackets/PacketConnectionRequest.h"
+#include "client_packets/packet_connection_request.h"
 
 
 #include <functional>

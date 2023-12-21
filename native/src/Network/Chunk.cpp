@@ -1,4 +1,4 @@
-#include "Chunk.h"
+#include "chunk.h"
 #include <godot_cpp/core/class_db.hpp>
 
 using namespace godot;

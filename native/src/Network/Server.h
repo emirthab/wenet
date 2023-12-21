@@ -7,8 +7,8 @@
 #include <godot_cpp/variant/packed_byte_array.hpp>
 
 #include "Chunk.h"
-#include "Utils/Common.h"
-#include "GamePacketHandler.h"
+#include "utils/common.h"
+#include "game_packet_handler.h"
 
 namespace godot
 {
