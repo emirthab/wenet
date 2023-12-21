@@ -18,7 +18,7 @@ void EventHandler::register_event(const std::string &header)
     event_factory[header] = []() -> EventBase *
     { return new T(); };
 }
- 
+
 EventBase *EventHandler::create_event(const std::string &header)
 {
     auto it = event_factory.find(header);
@@ -33,6 +33,10 @@ void EventHandler::handle_event(Array data)
 {
     String event_header = data[0];
     EventBase *event = create_event(event_header.utf8().get_data());
+    if (!event)
+    {
+        return;
+    }
     event->_handle();
     memdelete(event);
     delete event;
