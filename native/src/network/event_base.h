@@ -1,23 +1,25 @@
-#ifndef PACKET_BASE_H
-#define PACKET_BASE_H
+#ifndef EVENT_BASE_H
+#define EVENT_BASE_H
 
 #include <godot_cpp/classes/ref_counted.hpp>
 #include <godot_cpp/classes/node3d.hpp>
 
 namespace godot
 {
-    class PacketBase : public RefCounted
+    class EventBase : public RefCounted
     {
-        GDCLASS(PacketBase, RefCounted)
+        GDCLASS(EventBase, RefCounted)
 
     private:
+        
     protected:
         static void _bind_methods();
 
     public:
-        PacketBase(){};
-        ~PacketBase(){};
+        EventBase(){};
+        ~EventBase(){};
         virtual void _handle(){};
+        int test = 0;
     };
 }
 #endif

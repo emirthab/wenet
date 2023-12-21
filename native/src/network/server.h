@@ -6,9 +6,9 @@
 #include <godot_cpp/classes/packet_peer_udp.hpp>
 #include <godot_cpp/variant/packed_byte_array.hpp>
 
-#include "Chunk.h"
+#include "chunk.h"
 #include "utils/common.h"
-#include "game_packet_handler.h"
+#include "event_handler.h"
 
 namespace godot
 {
@@ -18,7 +18,7 @@ namespace godot
 
     private:
         UDPServer *server;
-        GamePacketHandler *packet_handler;
+        EventHandler *event_handler;
 
         int chunk_cell_radius = 10;
         int chunk_size = 128;
@@ -34,7 +34,7 @@ namespace godot
         Server()
         {
             singleton = this;
-            packet_handler = memnew(GamePacketHandler);
+            event_handler = memnew(EventHandler);
         }
 
         void init();
@@ -48,7 +48,7 @@ namespace godot
 
         void load_chunks(int chunk_size, int chunk_cell_radius);
 
-        GamePacketHandler *get_packet_handler() { return this->packet_handler; };
+        EventHandler *get_event_handler() { return this->event_handler; };
     };
 }
 

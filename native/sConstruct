@@ -16,9 +16,9 @@ env = SConscript("godot-cpp/SConstruct")
 env.Append(CPPPATH=["src/"])
 sources = [
         Glob("src/*.cpp"),
-        Glob("src/Network/*.cpp"),
-        Glob("src/Network/ClientPackets/*.cpp"),
-        Glob("src/Network/ServerPackets/*.cpp")
+        Glob("src/network/*.cpp"),
+        Glob("src/network/client_events/*.cpp"),
+        Glob("src/network/server_events/*.cpp")
     ]
 
 if env["platform"] == "macos":

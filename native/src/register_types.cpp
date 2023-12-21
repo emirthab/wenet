@@ -4,14 +4,14 @@
 #include <godot_cpp/godot.hpp>
 #include <godot_cpp/classes/engine.hpp>
 
-#include "Network/Chunk.h"
-#include "Network/Server.h"
-#include "Network/GamePacketHandler.h"
+#include "network/chunk.h"
+#include "network/server.h"
+#include "network/event_handler.h"
 
-#include "Network/PacketBase.h"
-#include "Network/ClientPackets/PacketConnectionRequest.h"
+#include "network/event_base.h"
+#include "network/client_events/event_connection_request.h"
 
-#include "Utils/Common.h"
+#include "utils/common.h"
 
 using namespace godot;
 
@@ -26,10 +26,10 @@ void initialize_example_module(ModuleInitializationLevel p_level)
 
 	ClassDB::register_class<Chunk>();
 	ClassDB::register_class<Server>();
-	ClassDB::register_class<GamePacketHandler>();
+	ClassDB::register_class<EventHandler>();
 
-	ClassDB::register_class<PacketBase>();
-	ClassDB::register_class<PacketConnectionRequest>();
+	ClassDB::register_class<EventBase>();
+	ClassDB::register_class<EventConnectionRequest>();
 
 	ServerPtr = memnew(Server);
 	ServerPtr->init();
