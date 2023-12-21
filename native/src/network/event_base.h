@@ -3,6 +3,7 @@
 
 #include <godot_cpp/classes/ref_counted.hpp>
 #include <godot_cpp/classes/node3d.hpp>
+#include <godot_cpp/classes/packet_peer_udp.hpp>
 
 namespace godot
 {
@@ -18,8 +19,9 @@ namespace godot
     public:
         EventBase(){};
         ~EventBase(){};
-        virtual void _handle(){};
-        int test = 0;
+        
+        virtual void _handle(Array packet,  Ref<PacketPeerUDP> peer){};
+        String header;
     };
 }
 #endif

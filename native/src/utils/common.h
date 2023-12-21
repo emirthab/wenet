@@ -13,12 +13,17 @@
 #include <godot_cpp/variant/builtin_types.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
-namespace godot
-{
-}
+#include <chrono>
 
 #define SCENE_TREE() Object::cast_to<SceneTree>(Engine::get_singleton()->get_main_loop())
 #define SCENE_ROOT() (SCENE_TREE()->get_root())
 #define NAMEOF(s) #s
+#define GET_TIME() \
+    ([]() { \
+        auto now = std::chrono::system_clock::now(); \
+        auto duration = now.time_since_epoch(); \
+        long long millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count(); \
+        return millis; \
+    })()
 
 #endif

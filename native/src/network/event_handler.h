@@ -30,7 +30,7 @@ namespace godot
 
         EventBase *create_event(const std::string &header);
 
-        void handle_event(Array data);
+        void handle_event(PackedByteArray packet, Ref<PacketPeerUDP> peer);
     };
 }
 

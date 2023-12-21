@@ -29,15 +29,18 @@ EventBase *EventHandler::create_event(const std::string &header)
     return nullptr;
 }
 
-void EventHandler::handle_event(Array data)
+void EventHandler::handle_event(PackedByteArray packet, Ref<PacketPeerUDP> peer)
 {
-    String event_header = data[0];
+    Array _packet = UtilityFunctions::str_to_var(packet.get_string_from_utf8());
+
+    String event_header = _packet[0];
+    
     EventBase *event = create_event(event_header.utf8().get_data());
     if (!event)
     {
         return;
     }
-    event->_handle();
+    event->_handle(packet, peer);
     memdelete(event);
     delete event;
 }

@@ -75,6 +75,10 @@ void Server::load_chunks(int chunk_size, int chunk_cell_radius)
     }
 }
 
+void Server::broadcast()
+{
+}
+
 void Server::_process(double delta)
 {
     if (!handling)
@@ -86,14 +90,13 @@ void Server::_process(double delta)
 
     if (server->is_connection_available())
     {
-        auto peer = server->take_connection();
-        auto packet = peer->get_packet();
+        Ref<PacketPeerUDP> peer = server->take_connection();
+        PackedByteArray packet = peer->get_packet();
 
-        String ip_address = peer->get_packet_ip();
+        UtilityFunctions::print(peer);
 
-        UtilityFunctions::print("Accepted Peer: " + ip_address);
-        UtilityFunctions::print("Received Data: " + packet.get_string_from_utf8());
+        // event_handler->handle_event(packet, peer);
 
-        peer->put_packet(packet);
+        // String ip_address = peer->get_packet_ip();
     }
 }

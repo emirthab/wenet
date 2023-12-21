@@ -24,6 +24,7 @@ namespace godot
         int chunk_size = 128;
         bool handling = false;
 
+        std::vector<PacketPeerUDP*> peer_list;
         std::unordered_map<int, std::unordered_map<int, Chunk *>> chunk_map;
 
     protected:
@@ -49,6 +50,8 @@ namespace godot
         void load_chunks(int chunk_size, int chunk_cell_radius);
 
         EventHandler *get_event_handler() { return this->event_handler; };
+
+        void broadcast();
     };
 }
 
