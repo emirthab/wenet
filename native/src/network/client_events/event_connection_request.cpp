@@ -7,7 +7,7 @@ void EventConnectionRequest::_bind_methods()
 
 }
 
-void EventConnectionRequest::_handle(Array packet, Ref<PacketPeerUDP> peer)
+void EventConnectionRequest::_handle(Array packet, Ref<PacketPeer> peer)
 {
     UtilityFunctions::print("test override");
 }
