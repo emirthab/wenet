@@ -2,8 +2,8 @@
 #define EVENT_HANDLER_H
 
 #include <godot_cpp/classes/object.hpp>
-#include <godot_cpp/classes/packet_peer_dtls.hpp>
 #include "event_base.h"
+#include "client.h"
 
 #include "client_events/event_connection_request.h"
 
@@ -31,7 +31,7 @@ namespace godot
 
         EventBase *create_event(const std::string &header);
 
-        void handle_event(PackedByteArray packet, Ref<PacketPeerDTLS> peer);
+        void handle_event(PackedByteArray packet, Client *client);
     };
 }
 

@@ -29,7 +29,7 @@ EventBase *EventHandler::create_event(const std::string &header)
     return nullptr;
 }
 
-void EventHandler::handle_event(PackedByteArray packet, Ref<PacketPeerDTLS> peer)
+void EventHandler::handle_event(PackedByteArray packet, Client *client)
 {
     Array _packet = UtilityFunctions::str_to_var(packet.get_string_from_utf8());
 
@@ -40,7 +40,7 @@ void EventHandler::handle_event(PackedByteArray packet, Ref<PacketPeerDTLS> peer
     {
         return;
     }
-    event->_handle(packet, peer);
+    event->_handle(packet, client);
     memdelete(event);
     delete event;
 }

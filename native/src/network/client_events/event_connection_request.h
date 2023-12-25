@@ -19,7 +19,7 @@ namespace godot
         EventConnectionRequest(){};
         ~EventConnectionRequest(){};
         
-        virtual void _handle(Array packet, Ref<PacketPeer> peer) override;
+        virtual void _handle(Array packet, Client *client) override;
         String header = "CON_REQ";
     };
 }
