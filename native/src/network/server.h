@@ -53,6 +53,8 @@ namespace godot
 
         std::unordered_map<int, std::unordered_map<int, Chunk *>> chunk_map;
 
+
+
     protected:
         static Server *singleton;
         static void _bind_methods();
@@ -75,7 +77,7 @@ namespace godot
 
         void load_chunks(int chunk_size, int chunk_cell_radius);
 
-        PacketHandler *get_event_handler() { return this->packet_handler; };
+        PacketHandler *get_packet_handler() { return this->packet_handler; };
 
         void authenticator();
 

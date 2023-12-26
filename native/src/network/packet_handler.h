@@ -27,11 +27,11 @@ namespace godot
         PacketHandler();
 
         template <typename T>
-        void register_event(const std::string &header);
+        void register_packet(const std::string &header);
 
         Packet *create_packet(Packet *packet);
 
-        void handle_event(Ref<PacketPeerDTLS> peer);
+        void handle_packet(Ref<PacketPeerDTLS> peer);
 
         std::vector<String> unauthorized_available_headers = {
             "AUTH_REQ"

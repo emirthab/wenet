@@ -14,10 +14,10 @@ Packet::Packet(const PackedByteArray &packet, Client *client)
     this->packet_builder(packet);
 };
 
-Packet::Packet(const bool &reliable, const String &packet_uid = String(), const String &header = String(), const Array &data = Array())
+Packet::Packet(const PacketType &packet_type, const String &ack_uid = String(), const String &header = String(), const Array &data = Array())
 {
-    this->reliable = reliable;
-    this->packet_uid = packet_uid;
+    this->packet_type = packet_type;
+    this->ack_uid = ack_uid;
     this->header = header;
     this->data = data;
 };
@@ -26,16 +26,12 @@ void Packet::packet_builder(const PackedByteArray &packet)
 {
     Array _packet = UtilityFunctions::bytes_to_var(packet);
 
-    if (int(_packet[0]) == 0)
-    {
-        this->reliable = false;
-    }
-    else
-    {
-        this->reliable = true;
-        _packet.pop_front();
+    this->packet_type = PacketType(int(_packet[0]));
+    _packet.pop_front();
 
-        this->packet_uid = String(_packet[0]);
+    if (this->packet_type == Packet::PACKET_TYPE_RELIABLE || this->packet_type == Packet::PACKET_TYPE_RETRANSMISSION)
+    {
+        this->ack_uid = String(_packet[0]);
         _packet.pop_front();
     }
 
@@ -43,4 +39,26 @@ void Packet::packet_builder(const PackedByteArray &packet)
     _packet.pop_front();
 
     this->data = _packet;
+}
+
+PackedByteArray Packet::get_bytes()
+{
+    Array arr = Array();
+    arr.push_back(int(this->packet_type));
+    if (this->packet_type == Packet::PACKET_TYPE_RELIABLE || this->packet_type == Packet::PACKET_TYPE_RETRANSMISSION)
+    {
+        if (this->ack_uid.is_empty())
+        {
+            arr.push_back(String(GENERATE_UID(8).c_str()));
+        }
+        else
+        {
+            arr.push_back(this->ack_uid);
+        }
+    }
+    arr.push_back(this->header);
+    arr.append_array(this->data);
+
+    PackedByteArray bytes = UtilityFunctions::var_to_bytes(arr);
+    return bytes;
 }

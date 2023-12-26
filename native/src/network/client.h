@@ -20,8 +20,11 @@ namespace godot
         Ref<PacketPeerUDP> udp_client;
         Ref<PacketPeerDTLS> dtls_client;
 
-        void send_packet();
-        void send_packet_reliable();
+        /** A list of reliable packets received, contains ack_uid */
+        // std::vector<String> ack_queue_recv;
+
+        /** A list of reliable packets sended, contains ack_uid & byte(for retransmission) */
+        // std::unordered_map<String, PackedByteArray> ack_queue_send;
 
         String _to_string() const
         {

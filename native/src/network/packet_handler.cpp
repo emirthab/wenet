@@ -10,11 +10,11 @@ void PacketHandler::_bind_methods()
 
 PacketHandler::PacketHandler()
 {
-    register_event<PacketAuthenticationRequest>("AUTH_REQ");
+    register_packet<PacketAuthenticationRequest>("AUTH_REQ");
 }
 
 template <typename T>
-void PacketHandler::register_event(const std::string &header)
+void PacketHandler::register_packet(const std::string &header)
 {
     packet_factory[header] = []() -> Packet *
     { return new T(); };
@@ -44,7 +44,7 @@ Packet *PacketHandler::create_packet(Packet *packet)
     return nullptr;
 }
 
-void PacketHandler::handle_event(Ref<PacketPeerDTLS> peer)
+void PacketHandler::handle_packet(Ref<PacketPeerDTLS> peer)
 {
     Packet *_packet = new Packet(peer->get_packet(), peer);
     Packet *packet = create_packet(_packet);
@@ -55,5 +55,9 @@ void PacketHandler::handle_event(Ref<PacketPeerDTLS> peer)
     if (packet)
     {
         packet->handle();
+        if (packet->packet_type == Packet::PACKET_TYPE_RELIABLE)
+        {
+            
+        }
     }
 }

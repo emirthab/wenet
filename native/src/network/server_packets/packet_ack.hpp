@@ -1,5 +1,5 @@
-#ifndef PACKET_CONNECTION_REQUEST_H
-#define PACKET_CONNECTION_REQUEST_H
+#ifndef PACKET_ACK_H
+#define PACKET_ACK_H
 
 #include <godot_cpp/classes/ref_counted.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
@@ -8,11 +8,11 @@
 
 namespace godot
 {
-    class PacketAuthenticationRequest : public Packet
+    class PacketAcknowledgement : public Packet
     {
 
     public:
-        PacketAuthenticationRequest(){
+        PacketAcknowledgement(){
             
         };
 

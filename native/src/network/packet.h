@@ -6,6 +6,7 @@
 #include <godot_cpp/variant/utility_functions.hpp>
 
 #include "client.h"
+#include "../utils/common.h"
 
 namespace godot
 {
@@ -14,7 +15,15 @@ namespace godot
 
     public:
         Packet(){};
-        virtual ~Packet() {};
+        virtual ~Packet(){};
+
+        enum PacketType
+        {
+            PACKET_TYPE_UNRELIABLE = 0,
+            PACKET_TYPE_RELIABLE = 1,
+            PACKET_TYPE_ACKNOWLEDGEMENT = 1,
+            PACKET_TYPE_RETRANSMISSION = 1,
+        };
 
         /** Constructor For receive from DTLS peer */
         Packet(const PackedByteArray &packet, Ref<PacketPeerDTLS> peer);
@@ -23,13 +32,15 @@ namespace godot
         Packet(const PackedByteArray &packet, Client *client);
 
         /** Constructor For send to Client or peer*/
-        Packet(const bool &reliable, const String &packet_uid, const String &header, const Array &data);
+        Packet(const PacketType &packet_type, const String &ack_uid, const String &header, const Array &data);
 
         /** Build packet from constructor use only receive */
         void packet_builder(const PackedByteArray &packet);
 
-        bool reliable;
-        String packet_uid;
+        PackedByteArray get_bytes();
+
+        PacketType packet_type;
+        String ack_uid;
         String header;
         Array data;
 
@@ -39,4 +50,7 @@ namespace godot
         virtual void handle(){};
     };
 }
+
+VARIANT_ENUM_CAST(Packet::PacketType);
+
 #endif

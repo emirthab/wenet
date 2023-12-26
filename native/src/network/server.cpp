@@ -13,7 +13,7 @@ void Server::_bind_methods()
     ClassDB::bind_method(D_METHOD("authenticator"), &Server::authenticator);
     ClassDB::bind_method(D_METHOD("start_server", "port", "key", "cert"), &Server::start_server);
     ClassDB::bind_method(D_METHOD("get_chunk", "x", "y"), &Server::get_chunk);
-    ClassDB::bind_method(D_METHOD("get_event_handler"), &Server::get_event_handler);
+    ClassDB::bind_method(D_METHOD("get_packet_handler"), &Server::get_packet_handler);
     ClassDB::bind_method(D_METHOD("_add_to_tree"), &Server::_add_to_tree);
     ClassDB::bind_method(D_METHOD("load_chunks", "chunk_size", "chunk_cell_radius"), &Server::load_chunks);
 
@@ -127,7 +127,7 @@ void Server::authenticator()
 
             if (GET_TIME() >= peer_created_at + auth_timeout)
             {
-                /** Timeout */
+                /** Authentication Timeout */
                 dtls_peer->disconnect_from_peer();
                 it = unauthorized_dtls_peers.erase(it);
                 UtilityFunctions::print("Timeout! Disconnected");
@@ -139,7 +139,7 @@ void Server::authenticator()
             {
                 while (dtls_peer->get_available_packet_count() > 0)
                 {
-                    packet_handler->handle_event(dtls_peer);
+                    packet_handler->handle_packet(dtls_peer);
                 }
             }
             it++;
