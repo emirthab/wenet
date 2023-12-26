@@ -6,10 +6,7 @@
 #include "network/chunk.h"
 #include "network/client.h"
 #include "network/server.h"
-#include "network/event_handler.h"
-
-#include "network/event_base.h"
-#include "network/client_events/event_connection_request.h"
+#include "network/packet_handler.h"
 
 #include "utils/common.h"
 
@@ -28,10 +25,7 @@ void initialize_example_module(ModuleInitializationLevel p_level)
 	ClassDB::register_class<Chunk>();
 	ClassDB::register_class<Client>();
 	ClassDB::register_class<Server>();
-	ClassDB::register_class<EventHandler>();
-
-	ClassDB::register_class<EventBase>();
-	ClassDB::register_class<EventConnectionRequest>();
+	ClassDB::register_class<PacketHandler>();
 
 	ServerPtr = memnew(Server);
 	ServerPtr->init();

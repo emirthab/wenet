@@ -16,6 +16,11 @@ void Server::_bind_methods()
     ClassDB::bind_method(D_METHOD("get_event_handler"), &Server::get_event_handler);
     ClassDB::bind_method(D_METHOD("_add_to_tree"), &Server::_add_to_tree);
     ClassDB::bind_method(D_METHOD("load_chunks", "chunk_size", "chunk_cell_radius"), &Server::load_chunks);
+
+    /** Properties */
+    ClassDB::bind_method(D_METHOD("get_auth_timeout"), &Server::get_auth_timeout);
+	ClassDB::bind_method(D_METHOD("set_auth_timeout", "timeout"), &Server::set_auth_timeout);
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "auth_timeout"), "set_auth_timeout", "get_auth_timeout");
 }
 
 void Server::init()
@@ -110,35 +115,38 @@ void Server::authenticator()
 
             UtilityFunctions::print("Peer[UDP/DTLS] connected with ip: " + udp_peer->get_packet_ip());
 
-            unauthorized_dtls_peers.push_back(*dtls_peer);
+            unauthorized_dtls_peers.push_back(AuthStruct(dtls_peer, GET_TIME()));
         }
 
         /** Packet Receiver For Unauthorized Peers */
 
-        
-        for (int i = 0, size = unauthorized_dtls_peers.size(); i < size; i++)
+        for (auto it = unauthorized_dtls_peers.begin(); it != unauthorized_dtls_peers.end();)
         {
-            Ref<PacketPeerDTLS> dtls_peer = unauthorized_dtls_peers[i];
+            Ref<PacketPeerDTLS> dtls_peer = it->peer;
+            long long peer_created_at = it->timestamp;
+
+            if (GET_TIME() >= peer_created_at + auth_timeout)
+            {
+                /** Timeout */
+                dtls_peer->disconnect_from_peer();
+                it = unauthorized_dtls_peers.erase(it);
+                UtilityFunctions::print("Timeout! Disconnected");
+                continue;
+            }
 
             dtls_peer->poll();
             if (dtls_peer->get_status() == PacketPeerDTLS::STATUS_CONNECTED)
             {
                 while (dtls_peer->get_available_packet_count() > 0)
                 {
-                    Array packet = UtilityFunctions::str_to_var(dtls_peer->get_packet().get_string_from_utf8());
-                    UtilityFunctions::print("RECEIVED DATA");
+                    packet_handler->handle_event(dtls_peer);
                 }
             }
+            it++;
         }
     }
 }
 
-void Server::authenticate(Ref<PacketPeerDTLS> peer, const String &auth_token, const String &user_name)
-{
-
-}
-
 void Server::_process(double delta)
 {
-    
 }

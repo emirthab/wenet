@@ -17,7 +17,7 @@
 #include "chunk.h"
 #include "client.h"
 #include "utils/common.h"
-#include "event_handler.h"
+#include "packet_handler.h"
 
 namespace godot
 {
@@ -26,12 +26,20 @@ namespace godot
         GDCLASS(Server, Node)
 
     private:
+        struct AuthStruct
+        {
+            Ref<PacketPeerDTLS> peer;
+            long long timestamp;
+            AuthStruct(const Ref<PacketPeerDTLS> &_peer, const long long &_timestamp) : peer(_peer),
+                                                                                        timestamp(_timestamp){};
+        };
+
         Ref<Thread> auth_thread;
 
         UDPServer *udp_server;
         DTLSServer *dtls_server;
 
-        EventHandler *event_handler;
+        PacketHandler *packet_handler;
 
         int chunk_cell_radius = 10;
         int chunk_size = 128;
@@ -40,8 +48,8 @@ namespace godot
         bool handling = false;
 
         std::vector<Client *> clients;
-        
-        std::vector<Ref<PacketPeerDTLS>> unauthorized_dtls_peers;
+
+        std::vector<AuthStruct> unauthorized_dtls_peers;
 
         std::unordered_map<int, std::unordered_map<int, Chunk *>> chunk_map;
 
@@ -53,7 +61,7 @@ namespace godot
         Server()
         {
             singleton = this;
-            event_handler = memnew(EventHandler);
+            packet_handler = memnew(PacketHandler);
         }
 
         void init();
@@ -67,11 +75,13 @@ namespace godot
 
         void load_chunks(int chunk_size, int chunk_cell_radius);
 
-        EventHandler *get_event_handler() { return this->event_handler; };
-
-        void authenticate(Ref<PacketPeerDTLS> peer, const String &auth_token, const String &user_name);
+        PacketHandler *get_event_handler() { return this->packet_handler; };
 
         void authenticator();
+
+        /** Property Getter Setters */
+        void set_auth_timeout(int timeout) { this->auth_timeout = timeout; };
+        int get_auth_timeout() { return this->auth_timeout; };
     };
 }
 

@@ -19,7 +19,14 @@ namespace godot
     public:
         Ref<PacketPeerUDP> udp_client;
         Ref<PacketPeerDTLS> dtls_client;
-        
+
+        void send_packet();
+        void send_packet_reliable();
+
+        String _to_string() const
+        {
+            return "<Client#" + itos(get_instance_id()) + ">";
+        }
     };
 }
 
