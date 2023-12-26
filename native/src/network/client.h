@@ -5,7 +5,6 @@
 
 #include <godot_cpp/classes/packet_peer_udp.hpp>
 #include <godot_cpp/classes/packet_peer_dtls.hpp>
-#include <godot_cpp/classes/stream_peer_tcp.hpp>
 
 namespace godot
 {
@@ -20,7 +19,6 @@ namespace godot
     public:
         Ref<PacketPeerUDP> udp_client;
         Ref<PacketPeerDTLS> dtls_client;
-        Ref<StreamPeerTCP> tcp_client;
         
     };
 }

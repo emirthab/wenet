@@ -32,12 +32,10 @@ void Server::_add_to_tree()
 
 void Server::start_server(int port, const Ref<CryptoKey> &key, const Ref<X509Certificate> &cert)
 {
-    tcp_server = memnew(TCPServer);
     udp_server = memnew(UDPServer);
     dtls_server = memnew(DTLSServer);
 
     Ref<TLSOptions> options = TLSOptions::server(key, cert);
-    tcp_server->listen(port);
     udp_server->listen(port);
     dtls_server->setup(options);
 
@@ -96,25 +94,6 @@ void Server::authenticator()
             continue;
         }
 
-        /** TCP Connection Implementation */
-
-        while (tcp_server->is_connection_available())
-        {
-            Ref<StreamPeerTCP> tcp_peer = tcp_server->take_connection();
-
-            if (tcp_peer->get_status() != StreamPeerTCP::STATUS_CONNECTED)
-            {
-                continue;
-            }
-
-            UtilityFunctions::print("Peer[TCP] connected with ip: " + tcp_peer->get_connected_host());
-
-            auth_pool.push_back({
-                nullptr,
-            });
-            unauthorized_tcp_peers.push_back(tcp_peer);
-        }
-
         /** UDP Connection Implementations*/
 
         udp_server->poll();
@@ -131,32 +110,12 @@ void Server::authenticator()
 
             UtilityFunctions::print("Peer[UDP/DTLS] connected with ip: " + udp_peer->get_packet_ip());
 
-            unauthorized_dtls_peers.push_back(dtls_peer);
+            unauthorized_dtls_peers.push_back(*dtls_peer);
         }
 
         /** Packet Receiver For Unauthorized Peers */
 
-        /** TCP */
-        for (int i = 0, size = unauthorized_tcp_peers.size(); i < size; i++)
-        {
-            Ref<StreamPeerTCP> tcp_peer = unauthorized_tcp_peers[i];
-
-            tcp_peer->poll();
-            if (tcp_peer->get_status() == StreamPeerTCP::STATUS_CONNECTED)
-            {
-                while (tcp_peer->get_available_bytes() > 0)
-                {
-                    Array packet = UtilityFunctions::str_to_var(tcp_peer->get_utf8_string());
-                }
-            }
-            else
-            {
-                /** Disconnected */
-                unauthorized_tcp_peers.erase(unauthorized_tcp_peers.begin() + i);
-            }
-        }
-
-        /** UDP/DTLS */
+        
         for (int i = 0, size = unauthorized_dtls_peers.size(); i < size; i++)
         {
             Ref<PacketPeerDTLS> dtls_peer = unauthorized_dtls_peers[i];
@@ -167,12 +126,8 @@ void Server::authenticator()
                 while (dtls_peer->get_available_packet_count() > 0)
                 {
                     Array packet = UtilityFunctions::str_to_var(dtls_peer->get_packet().get_string_from_utf8());
+                    UtilityFunctions::print("RECEIVED DATA");
                 }
-            }
-            else
-            {
-                /** Disconnected */
-                unauthorized_dtls_peers.erase(unauthorized_dtls_peers.begin() + i);
             }
         }
     }
@@ -180,22 +135,10 @@ void Server::authenticator()
 
 void Server::authenticate(Ref<PacketPeerDTLS> peer, const String &auth_token, const String &user_name)
 {
-    for (int i = 0, size = auth_pool.size(); i < size; i++)
-    {
-        AuthStruct &auth = auth_pool[i];
-        if (auth.auth_token == auth_token)
-        {
-            /** For now Due to Steam authentication not being used, multiple logins with the same account are allowed. */
-        }
-    }
-    AuthStruct auth = {peer, nullptr, auth_token, user_name, GET_TIME()};
-}
 
-void Server::authenticate(Ref<StreamPeerTCP> peer, const String &auth_token, const String &user_name)
-{
-    AuthStruct auth = {peer, nullptr, auth_token, user_name, GET_TIME()};
 }
 
 void Server::_process(double delta)
 {
+    
 }

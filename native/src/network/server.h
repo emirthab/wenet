@@ -12,9 +12,6 @@
 #include <godot_cpp/classes/tls_options.hpp>
 #include <godot_cpp/classes/packet_peer_dtls.hpp>
 
-#include <godot_cpp/classes/tcp_server.hpp>
-#include <godot_cpp/classes/stream_peer_tcp.hpp>
-
 #include <godot_cpp/classes/thread.hpp>
 
 #include "chunk.h"
@@ -29,36 +26,22 @@ namespace godot
         GDCLASS(Server, Node)
 
     private:
-        struct AuthStruct
-        {
-            Ref<PacketPeerDTLS> dtls_peer;
-            Ref<StreamPeerTCP> tcp_peer;
-            String auth_token;
-            String user_name;
-            long long timestamp;
-        };
-
         Ref<Thread> auth_thread;
-        Thread *tcp_thread;
-        Thread *udp_thread;
 
         UDPServer *udp_server;
         DTLSServer *dtls_server;
-        TCPServer *tcp_server;
 
         EventHandler *event_handler;
 
         int chunk_cell_radius = 10;
         int chunk_size = 128;
-        int auth_timeout = 10000;
+        int auth_timeout = 5000;
 
         bool handling = false;
 
         std::vector<Client *> clients;
-        std::vector<AuthStruct> auth_pool;
-
+        
         std::vector<Ref<PacketPeerDTLS>> unauthorized_dtls_peers;
-        std::vector<Ref<StreamPeerTCP>> unauthorized_tcp_peers;
 
         std::unordered_map<int, std::unordered_map<int, Chunk *>> chunk_map;
 
@@ -86,19 +69,10 @@ namespace godot
 
         EventHandler *get_event_handler() { return this->event_handler; };
 
-        enum Tunnel
-        {
-            TUNNEL_TCP = 1,
-            TUNNEL_DTLS = 0,
-        };
-
         void authenticate(Ref<PacketPeerDTLS> peer, const String &auth_token, const String &user_name);
-        void authenticate(Ref<StreamPeerTCP> peer, const String &auth_token, const String &user_name);
 
         void authenticator();
     };
 }
-
-VARIANT_ENUM_CAST(Server::Tunnel);
 
 #endif
