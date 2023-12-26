@@ -4,7 +4,7 @@
 #include <godot_cpp/classes/ref_counted.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
-#include "../packet.hpp"
+#include "../packet.h"
 
 namespace godot
 {
@@ -18,7 +18,7 @@ namespace godot
 
         virtual void handle() override
         {
-            
+            UtilityFunctions::print("Test");
         };
     };
 }

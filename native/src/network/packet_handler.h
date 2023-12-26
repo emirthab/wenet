@@ -5,7 +5,7 @@
 #include <godot_cpp/classes/packet_peer_dtls.hpp>
 
 #include "client.h"
-#include "packet.hpp"
+#include "packet.h"
 
 #include <functional>
 #include <iostream>
