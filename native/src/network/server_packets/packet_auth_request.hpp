@@ -4,21 +4,27 @@
 #include <godot_cpp/classes/ref_counted.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
-#include "../packet.h"
+#include "../packet.hpp"
 
 namespace godot
 {
     class PacketAuthenticationRequest : public Packet
     {
+        GDCLASS(PacketAuthenticationRequest, Packet)
 
     public:
+        /** Constructor for sending packet */
         PacketAuthenticationRequest(){
-            
+
         };
 
-        virtual void handle() override
+        virtual void read() override{
+
+        };
+
+        virtual PackedByteArray write() override
         {
-            UtilityFunctions::print(this->get_bytes());
+            return Packet::write();
         };
     };
 }

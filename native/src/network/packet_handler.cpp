@@ -20,44 +20,30 @@ void PacketHandler::register_packet(const std::string &header)
     { return new T(); };
 }
 
-Packet *PacketHandler::create_packet(Packet *packet)
+Packet *PacketHandler::create_packet(const std::string &header)
 {
-    auto it = packet_factory.find(packet->header.utf8().get_data());
+    auto it = packet_factory.find(header);
     if (it != packet_factory.end())
     {
-        Packet *new_packet = (it->second)();
-
-        Packet *casted_packet = dynamic_cast<Packet *>(new_packet);
-
-        if (casted_packet)
-        {
-            *casted_packet = *packet;
-            return casted_packet;
-        }
-        else
-        {
-            // Type conversion failed, delete new packet to avoid memory leak
-            delete new_packet;
-            return nullptr;
-        }
+        return (it->second)();
     }
     return nullptr;
 }
 
-void PacketHandler::handle_packet(Ref<PacketPeerDTLS> peer)
+void PacketHandler::handle_packet(PackedByteArray bytes, Client *client, Packet::Tunnel tunnel)
 {
-    Packet *_packet = new Packet(peer->get_packet(), peer);
-    Packet *packet = create_packet(_packet);
+    Array _packet = UtilityFunctions::bytes_to_var(bytes);
 
-    delete _packet;
-    _packet = nullptr;
+    String header = _packet[0];
+    _packet.pop_front();
+
+    Packet *packet = create_packet(header.utf8().get_data());
 
     if (packet)
     {
-        packet->handle();
-        if (packet->packet_type == Packet::PACKET_TYPE_RELIABLE)
-        {
-            
-        }
+        packet->tunnel = tunnel;
+        packet->sender = client;
+        packet->data = _packet;
+        packet->read();
     }
 }

@@ -2,10 +2,9 @@
 #define PACKET_HANDLER_H
 
 #include <godot_cpp/classes/object.hpp>
-#include <godot_cpp/classes/packet_peer_dtls.hpp>
 
 #include "client.h"
-#include "packet.h"
+#include "packet.hpp"
 
 #include <functional>
 #include <iostream>
@@ -29,13 +28,12 @@ namespace godot
         template <typename T>
         void register_packet(const std::string &header);
 
-        Packet *create_packet(Packet *packet);
+        Packet *create_packet(const std::string &header);
 
-        void handle_packet(Ref<PacketPeerDTLS> peer);
+        void handle_packet(PackedByteArray bytes, Client *client, Packet::Tunnel tunnel);
 
         std::vector<String> unauthorized_available_headers = {
-            "AUTH_REQ"
-        };
+            "AUTH_REQ"};
     };
 }
 

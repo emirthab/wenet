@@ -12,6 +12,9 @@
 #include <godot_cpp/classes/tls_options.hpp>
 #include <godot_cpp/classes/packet_peer_dtls.hpp>
 
+#include <godot_cpp/classes/tcp_server.hpp>
+#include <godot_cpp/classes/stream_peer_tcp.hpp>
+
 #include <godot_cpp/classes/thread.hpp>
 
 #include "chunk.h"
@@ -21,23 +24,40 @@
 
 namespace godot
 {
+    struct AuthStruct
+    {
+        Ref<PacketPeerDTLS> dtls_peer;
+        Ref<PacketPeerUDP> udp_peer;
+        Ref<StreamPeerTCP> tcp_peer;
+
+        String auth_token;
+        String user_name;
+        long long timestamp;
+
+        AuthStruct() : timestamp(GET_TIME()){};
+        AuthStruct(const Ref<PacketPeerDTLS> &dtls_peer, const Ref<PacketPeerUDP> &udp_peer, const long long &timestamp)
+        {
+            this->dtls_peer = dtls_peer;
+            this->udp_peer = udp_peer;
+            this->timestamp = timestamp;
+        };
+        AuthStruct(const Ref<StreamPeerTCP> &tcp_peer, const long long &timestamp)
+        {
+            this->tcp_peer = tcp_peer;
+            this->timestamp = timestamp;
+        };
+    };
+
     class Server : public Node
     {
         GDCLASS(Server, Node)
 
     private:
-        struct AuthStruct
-        {
-            Ref<PacketPeerDTLS> peer;
-            long long timestamp;
-            AuthStruct(const Ref<PacketPeerDTLS> &_peer, const long long &_timestamp) : peer(_peer),
-                                                                                        timestamp(_timestamp){};
-        };
-
         Ref<Thread> auth_thread;
 
         UDPServer *udp_server;
         DTLSServer *dtls_server;
+        TCPServer *tcp_server;
 
         PacketHandler *packet_handler;
 
@@ -49,22 +69,17 @@ namespace godot
 
         std::vector<Client *> clients;
 
-        std::vector<AuthStruct> unauthorized_dtls_peers;
+        /** IP address, Struct */
+        std::unordered_map<std::string, AuthStruct> unauthorized_peers;
 
         std::unordered_map<int, std::unordered_map<int, Chunk *>> chunk_map;
-
-
 
     protected:
         static Server *singleton;
         static void _bind_methods();
 
     public:
-        Server()
-        {
-            singleton = this;
-            packet_handler = memnew(PacketHandler);
-        }
+        Server();
 
         void init();
         void _add_to_tree();
@@ -80,6 +95,13 @@ namespace godot
         PacketHandler *get_packet_handler() { return this->packet_handler; };
 
         void authenticator();
+        void connector_tcp();
+        void connector_udp();
+        void handle_unauthorized_packet_udp();
+        void handle_unauthorized_packet_tcp();
+        void disconnect_from_peers(Ref<PacketPeerDTLS> dtls_peer, Ref<StreamPeerTCP> tcp_peer);
+
+        void authenticate(AuthStruct _struct);
 
         /** Property Getter Setters */
         void set_auth_timeout(int timeout) { this->auth_timeout = timeout; };

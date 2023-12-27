@@ -19,8 +19,14 @@ void Server::_bind_methods()
 
     /** Properties */
     ClassDB::bind_method(D_METHOD("get_auth_timeout"), &Server::get_auth_timeout);
-	ClassDB::bind_method(D_METHOD("set_auth_timeout", "timeout"), &Server::set_auth_timeout);
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "auth_timeout"), "set_auth_timeout", "get_auth_timeout");
+    ClassDB::bind_method(D_METHOD("set_auth_timeout", "timeout"), &Server::set_auth_timeout);
+    ADD_PROPERTY(PropertyInfo(Variant::INT, "auth_timeout"), "set_auth_timeout", "get_auth_timeout");
+}
+
+Server::Server()
+{
+    singleton = this;
+    packet_handler = memnew(PacketHandler);
 }
 
 void Server::init()
@@ -39,10 +45,13 @@ void Server::start_server(int port, const Ref<CryptoKey> &key, const Ref<X509Cer
 {
     udp_server = memnew(UDPServer);
     dtls_server = memnew(DTLSServer);
+    tcp_server = memnew(TCPServer);
 
     Ref<TLSOptions> options = TLSOptions::server(key, cert);
     udp_server->listen(port);
     dtls_server->setup(options);
+
+    tcp_server->listen(port);
 
     auth_thread.instantiate();
     Callable callable_auth = Callable(this, "authenticator");
@@ -99,52 +108,187 @@ void Server::authenticator()
             continue;
         }
 
-        /** UDP Connection Implementations*/
-
         udp_server->poll();
-
-        while (udp_server->is_connection_available())
-        {
-            Ref<PacketPeerUDP> udp_peer = udp_server->take_connection();
-            Ref<PacketPeerDTLS> dtls_peer = dtls_server->take_connection(udp_peer);
-
-            if (dtls_peer->get_status() != PacketPeerDTLS::STATUS_HANDSHAKING)
-            {
-                continue;
-            }
-
-            UtilityFunctions::print("Peer[UDP/DTLS] connected with ip: " + udp_peer->get_packet_ip());
-
-            unauthorized_dtls_peers.push_back(AuthStruct(dtls_peer, GET_TIME()));
-        }
+        connector_udp();
+        connector_tcp();
 
         /** Packet Receiver For Unauthorized Peers */
-
-        for (auto it = unauthorized_dtls_peers.begin(); it != unauthorized_dtls_peers.end();)
+        for (auto it = unauthorized_peers.begin(); it != unauthorized_peers.end();)
         {
-            Ref<PacketPeerDTLS> dtls_peer = it->peer;
-            long long peer_created_at = it->timestamp;
+            AuthStruct _struct = it->second;
+
+            Ref<PacketPeerDTLS> dtls_peer = _struct.dtls_peer;
+            Ref<StreamPeerTCP> tcp_peer = _struct.tcp_peer;
+
+            long long peer_created_at = _struct.timestamp;
 
             if (GET_TIME() >= peer_created_at + auth_timeout)
             {
                 /** Authentication Timeout */
-                dtls_peer->disconnect_from_peer();
-                it = unauthorized_dtls_peers.erase(it);
+                disconnect_from_peers(dtls_peer, tcp_peer);
+                it = unauthorized_peers.erase(it);
                 UtilityFunctions::print("Timeout! Disconnected");
                 continue;
             }
 
-            dtls_peer->poll();
-            if (dtls_peer->get_status() == PacketPeerDTLS::STATUS_CONNECTED)
+            /** DTLS */
+            if (!dtls_peer.is_null())
             {
-                while (dtls_peer->get_available_packet_count() > 0)
+                dtls_peer->poll();
+                if (dtls_peer->get_status() == PacketPeerDTLS::STATUS_CONNECTED)
                 {
-                    packet_handler->handle_packet(dtls_peer);
+                    while (dtls_peer->get_available_packet_count() > 0)
+                    {
+                        Array packet = UtilityFunctions::bytes_to_var(dtls_peer->get_packet());
+                        if (packet[0] == "AUTH")
+                        {
+                            String auth_token = packet[1];
+                            String user_name = packet[2];
+
+                            if (!_struct.auth_token.is_empty() && !_struct.user_name.is_empty() && !_struct.tcp_peer.is_null())
+                            {
+                                if (_struct.auth_token == auth_token && _struct.user_name == user_name)
+                                {
+                                    authenticate(_struct);
+                                }
+                                else
+                                {
+                                    disconnect_from_peers(dtls_peer, tcp_peer);
+                                }
+                            }
+                            else
+                            {
+                                _struct.auth_token = auth_token;
+                                _struct.user_name = user_name;
+                            }
+                        }
+                    }
                 }
             }
+
+            /** TCP */
+            if (!tcp_peer.is_null())
+            {
+                tcp_peer->poll();
+                if (tcp_peer->get_status() == StreamPeerTCP::STATUS_CONNECTED)
+                {
+                    while (tcp_peer->get_available_bytes() > 0)
+                    {
+                        Array packet = UtilityFunctions::str_to_var(tcp_peer->get_utf8_string());
+                        if (packet[0] == "AUTH")
+                        {
+                            String auth_token = packet[1];
+                            String user_name = packet[2];
+
+                            if (!_struct.auth_token.is_empty() && !_struct.user_name.is_empty() && !_struct.dtls_peer.is_null())
+                            {
+                                if (_struct.auth_token == auth_token && _struct.user_name == user_name)
+                                {
+                                    authenticate(_struct);
+                                }
+                                else
+                                {
+                                    disconnect_from_peers(dtls_peer, tcp_peer);
+                                }
+                            }
+                            else
+                            {
+                                _struct.auth_token = auth_token;
+                                _struct.user_name = user_name;
+                            }
+                        }
+                    }
+                }
+            }
+
             it++;
         }
     }
+}
+
+void disconnect_from_peers(Ref<PacketPeerDTLS> dtls_peer, Ref<StreamPeerTCP> tcp_peer)
+{
+    if (!dtls_peer.is_null())
+    {
+        dtls_peer->disconnect_from_peer();
+    }
+    if (!tcp_peer.is_null())
+    {
+        tcp_peer->disconnect_from_host();
+    }
+}
+
+void handle_unauthorized_packet_udp()
+{
+}
+
+void handle_unauthorized_packet_tcp()
+{
+}
+
+void Server::connector_tcp()
+{
+    while (tcp_server->is_connection_available())
+    {
+        Ref<StreamPeerTCP> tcp_peer = tcp_server->take_connection();
+
+        if (tcp_peer->get_status() != StreamPeerTCP::STATUS_CONNECTING)
+        {
+            continue;
+        }
+
+        String ip_address = tcp_peer->get_connected_host();
+
+        UtilityFunctions::print("Peer[TCP] connected with ip: " + ip_address);
+
+        auto it = unauthorized_peers.find(ip_address.utf8().get_data());
+        if (it != unauthorized_peers.end())
+        {
+            /** override */
+            AuthStruct _struct = it->second;
+            _struct.tcp_peer = tcp_peer;
+        }
+        else
+        {
+            /** init */
+            unauthorized_peers[ip_address.utf8().get_data()] = AuthStruct(tcp_peer, GET_TIME());
+        }
+    }
+}
+
+void Server::connector_udp()
+{
+    while (udp_server->is_connection_available())
+    {
+        Ref<PacketPeerUDP> udp_peer = udp_server->take_connection();
+        Ref<PacketPeerDTLS> dtls_peer = dtls_server->take_connection(udp_peer);
+
+        if (dtls_peer->get_status() != PacketPeerDTLS::STATUS_HANDSHAKING)
+        {
+            continue;
+        }
+        String ip_address = udp_peer->get_packet_ip();
+
+        UtilityFunctions::print("Peer[UDP/DTLS] connected with ip: " + ip_address);
+
+        auto it = unauthorized_peers.find(ip_address.utf8().get_data());
+        if (it != unauthorized_peers.end())
+        {
+            /** override */
+            AuthStruct _struct = it->second;
+            _struct.dtls_peer = dtls_peer;
+            _struct.udp_peer = udp_peer;
+        }
+        else
+        {
+            /** init */
+            unauthorized_peers[ip_address.utf8().get_data()] = AuthStruct(dtls_peer, udp_peer, GET_TIME());
+        }
+    }
+}
+
+void authenticate(AuthStruct _struct)
+{
 }
 
 void Server::_process(double delta)
